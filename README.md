@@ -302,3 +302,15 @@ upstream snapshotも`package.json`でMITを宣言していますが、snapshot�
 copyright holder・yearの明記はありませんでした。確認できた事実とfork側noticeの範囲は
 [NOTICE.md](NOTICE.md)へ分離しています。元の著作権者をMinagi Tohnoとして扱うものではなく、
 このrepositoryでは不明なupstream holderを推測していません。
+
+### Atomic Pixi layer reads
+
+Authenticated `POST /query` supports `source: "webview.layers"`,
+`root: "pixi.last-rendered"`, an explicit `frameId`, and `rootPath` containing
+only `children` / decimal-index pairs (at most 32 segments). One synchronous
+inspection returns `{available, schemaVersion: 1, frameId, count, layers}`.
+The 3–16 direct children each contain only own data properties `visible`,
+`renderable`, and `worldAlpha`; hidden children are included. Missing properties,
+accessors, sparse arrays, nonfinite/out-of-range flags and a changed child stack
+fail the request. Display objects and their descendants are never serialized.
+This read does not enable input or cache observations between requests.
