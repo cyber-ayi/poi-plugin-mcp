@@ -332,3 +332,22 @@ results: [{scopeIndex, rootPath, scene}]}`. A root replacement aborts the batch;
 there is no cache between invocations. Capabilities advertise
 `webviewFindBatchSchemaVersion: 1`. This interface performs local inspection
 only and never calls a game business API.
+
+Batch inspection scheduling and failure semantics: the projections run synchronously
+on the game page and can delay rendering while they execute. The 100,000-node
+aggregate limit is a count bound, not a frame-time guarantee; no worst-case frame
+stall has been measured. It can allow twice the previous 50,000-node single-query
+budget. Keep caller budgets as small as possible: KC Assist's inventory batch
+requests 50,000 nodes total and its identity/overlay batch requests 50,500.
+This batching reduces IPC calls, not the number of bounded traversals inside the page.
+
+The 2 MiB limit applies to the complete batch, so individually valid scopes may
+fail when combined. Treat rejection, missing scopes and truncated projections as
+an incomplete observation; never interpret them as a verified page state or retry
+input automatically. Split or reduce scopes only in a new independent observation.
+
+The candidate package version is `0.2.30-minagi.2`, distinguishing these capabilities
+from the prior build. This does not create a release tag or alter the existing
+upstream installation examples. A deployment that overlays only the two reviewed
+runtime modules keeps the installed package metadata; verify the capability fields
+and exact module hashes rather than inferring support from that metadata alone.
