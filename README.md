@@ -303,6 +303,8 @@ copyright holder・yearの明記はありませんでした。確認できた事
 [NOTICE.md](NOTICE.md)へ分離しています。元の著作権者をMinagi Tohnoとして扱うものではなく、
 このrepositoryでは不明なupstream holderを推測していません。
 
+Captured equipment source schema, invalidation and consumer migration: [EQUIPMENT_SOURCES](docs/EQUIPMENT_SOURCES.md).
+
 ### Atomic Pixi layer reads
 
 Authenticated `POST /query` supports `source: "webview.layers"`,
