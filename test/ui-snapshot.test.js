@@ -22,6 +22,7 @@ test('one capture produces fixed projections matching independent queries includ
  const f=fixture(),value=await f.runtime.readUiSnapshot({})
  assert.equal(f.count(),1)
  for(const [i,scope] of snapshotScopes.entries()) {
+  if(scope.name==='all')continue
   const {name,...query}=scope
   const legacy=await f.runtime.findObjects({...query,frameId:'1:2',root:'pixi.last-rendered',projection:'pixi.interactive',maxNodes:50000})
   const actual=value.scopes[i].scene
@@ -92,4 +93,20 @@ test('frozen diagnostic returns the exact encoded bytes and rejects mismatched i
  const frozen=p.readFrozen({...request,frozenId:hash})
  assert.equal(frozen.body,live.body);assert.equal(frozen.providerSerializeMs,0)
  assert.throws(()=>p.readFrozen({...request,frozenId:'d'.repeat(64)}),/rejected/)
+})
+test('complete primitive graph carries own geometry for independently scoped consumer unions',async()=>{
+ const f=fixture(),value=await f.runtime.readUiSnapshot({}),all=value.scopes.at(-1)
+ assert.equal(all.name,'all');assert.equal(all.scene.exhausted,true)
+ assert.ok(all.scene.matches.length>=4)
+ assert.ok(all.scene.matches.every(node=>Object.hasOwn(node,'ownWorldBounds')))
+ assert.equal(all.scene.matches.find(node=>node.path.length===0).ownWorldBounds,null)
+})
+test('present data descriptor with nonscalar value stays distinct from absence and accessor',async()=>{
+ const f=fixture();f.root.children[0]._text={private:'never serialized'}
+ Object.defineProperty(f.root,'_text',{get(){throw Error('must not execute')}})
+ const value=await f.runtime.readUiSnapshot({}),all=value.scopes.at(-1).scene
+ assert.ok(all.matches.find(n=>n.path.length===2).presentKeys.includes('_text'))
+ assert.ok(!all.matches.find(n=>n.path.length===0).presentKeys.includes('_text'))
+ assert.ok(!JSON.stringify(value).includes('never serialized'))
+ assert.ok(value.scopes[0].scene.matches.some(n=>n.path.length===2))
 })

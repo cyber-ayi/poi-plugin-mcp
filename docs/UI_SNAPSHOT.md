@@ -14,9 +14,9 @@ query, eval or game calls. The production controller has no new input setting.
 
 Every live request discovers frames afresh and requires exactly one available
 render root. One synchronous own-property Pixi traversal feeds seven fixed
-projections; scoped bounds are recomputed from captured geometry, including the
+projections plus a complete bounded primitive graph (schema 2); scoped bounds are recomputed from captured geometry, including the
 shallow error overlay's exact depth limit. Missing scopes remain unavailable;
-node/depth budgets cannot silently become a complete result. Layer flags include
+node/depth budgets cannot silently become a complete result. The complete graph records each node’s own geometry and the presence of allowlisted own data descriptors. Presence is distinct from a serializable scalar value; complex values and accessors are never read. Consumers recompute shallow unions and use a distinct token namespace. Layer flags include
 hidden siblings. Normal unfiltered stock state reuses #3's full set/order, target
 ship/slot, page and visible row identity checks. Other modes remain unavailable.
 
