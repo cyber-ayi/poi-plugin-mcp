@@ -304,3 +304,52 @@ copyright holder・yearの明記はありませんでした。確認できた事
 このrepositoryでは不明なupstream holderを推測していません。
 
 Captured equipment source schema, invalidation and consumer migration: [EQUIPMENT_SOURCES](docs/EQUIPMENT_SOURCES.md).
+
+### Atomic Pixi layer reads
+
+Authenticated `POST /query` supports `source: "webview.layers"`,
+`root: "pixi.last-rendered"`, an explicit `frameId`, and `rootPath` containing
+only `children` / decimal-index pairs (at most 32 segments). One synchronous
+inspection returns `{available, schemaVersion: 1, frameId, count, layers}`.
+The 3–16 direct children each contain only own data properties `visible`,
+`renderable`, and `worldAlpha`; hidden children are included. Missing properties,
+accessors, sparse arrays, nonfinite/out-of-range flags and a changed child stack
+fail the request. Display objects and their descendants are never serialized.
+This read does not enable input or cache observations between requests.
+
+### Bounded multi-scope Pixi find
+
+`webview.find` accepts a `scopes` array with 1–8 entries under an explicit frame
+and `root: "pixi.last-rendered"`, `projection: "pixi.interactive"`. Each scope
+accepts only `rootPath` (bounded children/index pairs), `requiredKeys`,
+`anyRequiredKeys`, `selectKeys`, `maxDepth`, `maxNodes`, and `maxMatches`.
+Existing per-scope limits still apply; the aggregate node budget is at most
+100,000 and the entire result is capped at 2 MiB. Hidden-parent pruning remains
+mandatory. Unknown fields and unsafe keys are rejected before inspection.
+
+A batch runs the existing bounded projections synchronously against one render
+root in one WebView IPC. Each scope keeps its own bounds, tokens, filtering and
+truncation metadata. The response is `{available, schemaVersion: 1, frameId,
+results: [{scopeIndex, rootPath, scene}]}`. A root replacement aborts the batch;
+there is no cache between invocations. Capabilities advertise
+`webviewFindBatchSchemaVersion: 1`. This interface performs local inspection
+only and never calls a game business API.
+
+Batch inspection scheduling and failure semantics: the projections run synchronously
+on the game page and can delay rendering while they execute. The 100,000-node
+aggregate limit is a count bound, not a frame-time guarantee; no worst-case frame
+stall has been measured. It can allow twice the previous 50,000-node single-query
+budget. Keep caller budgets as small as possible: KC Assist's inventory batch
+requests 50,000 nodes total and its identity/overlay batch requests 50,500.
+This batching reduces IPC calls, not the number of bounded traversals inside the page.
+
+The 2 MiB limit applies to the complete batch, so individually valid scopes may
+fail when combined. Treat rejection, missing scopes and truncated projections as
+an incomplete observation; never interpret them as a verified page state or retry
+input automatically. Split or reduce scopes only in a new independent observation.
+
+The candidate package version is `0.2.30-minagi.2`, distinguishing these capabilities
+from the prior build. This does not create a release tag or alter the existing
+upstream installation examples. A deployment that overlays only the two reviewed
+runtime modules keeps the installed package metadata; verify the capability fields
+and exact module hashes rather than inferring support from that metadata alone.
