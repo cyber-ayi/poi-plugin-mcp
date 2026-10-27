@@ -314,3 +314,21 @@ The 3–16 direct children each contain only own data properties `visible`,
 accessors, sparse arrays, nonfinite/out-of-range flags and a changed child stack
 fail the request. Display objects and their descendants are never serialized.
 This read does not enable input or cache observations between requests.
+
+### Bounded multi-scope Pixi find
+
+`webview.find` accepts a `scopes` array with 1–8 entries under an explicit frame
+and `root: "pixi.last-rendered"`, `projection: "pixi.interactive"`. Each scope
+accepts only `rootPath` (bounded children/index pairs), `requiredKeys`,
+`anyRequiredKeys`, `selectKeys`, `maxDepth`, `maxNodes`, and `maxMatches`.
+Existing per-scope limits still apply; the aggregate node budget is at most
+100,000 and the entire result is capped at 2 MiB. Hidden-parent pruning remains
+mandatory. Unknown fields and unsafe keys are rejected before inspection.
+
+A batch runs the existing bounded projections synchronously against one render
+root in one WebView IPC. Each scope keeps its own bounds, tokens, filtering and
+truncation metadata. The response is `{available, schemaVersion: 1, frameId,
+results: [{scopeIndex, rootPath, scene}]}`. A root replacement aborts the batch;
+there is no cache between invocations. Capabilities advertise
+`webviewFindBatchSchemaVersion: 1`. This interface performs local inspection
+only and never calls a game business API.
