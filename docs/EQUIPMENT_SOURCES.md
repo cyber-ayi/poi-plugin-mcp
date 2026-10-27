@@ -1,5 +1,33 @@
 # Captured equipment sources (schema 1)
 
+## Current UI stock order (experimental)
+
+`POST /query` with only `source: "webview.equipment-stock"` and `frameId`
+provides a separate schema-1 projection, advertised by
+`capabilities.equipmentStockSchemaVersion`. It synchronously reads own data
+properties of the current UI selection task; no game method, getter or API is
+invoked. Normal live slot opening did not produce a `slot_select` response, so
+this projection does not depend on either retained endpoint below.
+
+Supported scope is stock mode, category/detail 0, normal slot, 10 rows per page.
+The task must own the active list panel and exact supported layer stack. The
+complete `_sourceSlotItems` order must equal `_unsetList` membership, contain no
+duplicates or attached/sortie/expedition items, and exactly match the current
+visible page including a short tail. Missing/accessor properties, oversized or
+sparse arrays, open filters and inconsistent page/task state fail closed.
+
+Successful values include `available`, `complete`, `schemaVersion`,
+`source: "current_ui_stock_order"`, ship/slot, mode/category/detail, page size,
+page/count, `orderedIds`, `rowIds`, frame/document scope and `responseCursor`.
+The raw response cursor must be unchanged across the read. `documentToken`
+identifies frame/URL scope, not a document-lifetime guarantee. Consumers must
+revalidate current account ownership, the complete order, current frame/task,
+response cursor and page before each input; this projection grants no input
+permission. Failures return unavailable or fail the query, never a partial list.
+
+Raw lists are private account data. This experimental source does not change
+captured endpoint semantics below or qualify business confirmation.
+
 Tracked in [kc-assist#57](https://github.com/homelab-s5oyt03iv9/kc-assist/issues/57).
 `GET /equipment-selection` and `GET /unsetslot` only report responses already
 observed from ordinary game UI activity. They never fetch game APIs. This schema
