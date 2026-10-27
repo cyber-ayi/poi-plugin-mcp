@@ -302,3 +302,5 @@ upstream snapshotも`package.json`でMITを宣言していますが、snapshot�
 copyright holder・yearの明記はありませんでした。確認できた事実とfork側noticeの範囲は
 [NOTICE.md](NOTICE.md)へ分離しています。元の著作権者をMinagi Tohnoとして扱うものではなく、
 このrepositoryでは不明なupstream holderを推測していません。
+
+Captured equipment source schema, invalidation and consumer migration: [EQUIPMENT_SOURCES](docs/EQUIPMENT_SOURCES.md).
