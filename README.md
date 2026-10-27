@@ -353,3 +353,28 @@ from the prior build. This does not create a release tag or alter the existing
 upstream installation examples. A deployment that overlays only the two reviewed
 runtime modules keeps the installed package metadata; verify the capability fields
 and exact module hashes rather than inferring support from that metadata alone.
+
+### Opt-in observation decision spike (#4)
+
+The default-off, expiring UI snapshot experiment also provides fixed read-only
+`POST /ui-observation` and `/ui-observation/frozen` routes over HTTP and the same
+user-local observation pipe. They require the existing bearer and a 256-byte
+bounded nonce request. The pipe cannot dispatch query, eval, admin or input.
+
+A live bundle contains the existing `/all` account DTO, the full capacity-256
+action-event window and a schema-2 UI snapshot. Account and event payloads are
+cloned before the renderer capture and compared again afterwards, alongside
+independent response/event cursors and owner identity. Any change rejects the
+bundle. It remains `inputCapable:false` and `outputQualified:false`; it grants no
+permit or execution qualification. Frozen diagnostics replay exact encoded bytes
+for at most five seconds, are marked frozen and cannot enter the live client.
+
+KC Assist's native Windows no-input spike measured 98.981ms for separate reads,
+96.876ms for a complete HTTP bundle and 72.576ms for a complete pipe bundle
+(five samples; decoding, validation and projections included). This supports
+limited pipe-bundle integration, pending current inventory/layer parity and
+execution qualification. The measured screen had inventory and refit layers
+unavailable; this does not establish inventory completeness. Image sharing was
+rejected by freshness/graph identity checks and is not wired into execution.
+See [the consumer decision record](https://github.com/homelab-s5oyt03iv9/kc-assist/pull/63).
+Both business PRs remain drafts; this is not a release or deployed capability.
